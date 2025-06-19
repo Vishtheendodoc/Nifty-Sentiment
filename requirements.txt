@@ -9,3 +9,4 @@ apscheduler
 scipy
 scikit-learn
 joblib
+gspread
