@@ -688,7 +688,7 @@ def enhanced_analyze_data(option_chain):
             'MFI': 'mean'
         }).reset_index()
         
-        update_writing_flows_to_gsheet(flow_agg, st.session_state.gsheet)
+    
         
         # Price data with MFI
         price_data = log_df.groupby('TimeSlot').agg({
