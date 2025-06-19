@@ -232,36 +232,6 @@ def sentiment_color(score):
     else:
         return 'gray'
 
-def update_writing_flows_to_gsheet(flow_agg, gsheet):
-    # Load existing sheet data (only the first 2 columns)
-    try:
-        existing = gsheet.get_all_values()
-        existing_keys = set(
-            f"{row[0]}_{row[1]}" for row in existing[1:]  # Skip header
-        )
-    except Exception as e:
-        st.warning(f"⚠️ Could not read existing sheet rows: {e}")
-        existing_keys = set()
-
-    writing_flows = ['Call Short', 'Put Write', 'Heavy Call Short', 'Heavy Put Write']
-    filtered = flow_agg[flow_agg['Flow_Type'].isin(writing_flows)]
-
-    for _, row in filtered.iterrows():
-        key = f"{row['TimeSlot']}_{row['Flow_Type']}"
-        if key in existing_keys:
-            continue  # Skip if already written
-
-        row_data = [
-            row['TimeSlot'],
-            row['Flow_Type'],
-            int(row['Weighted_Activity']),
-            round(row.get('MFI', 0), 2),
-            round(row.get('UnderlyingValue', 0), 2)
-        ]
-        try:
-            gsheet.append_row(row_data)
-        except Exception as e:
-            st.warning(f"❌ Failed to log writing flow: {e}")
 
 
 def enhanced_analyze_data(option_chain):
