@@ -41,15 +41,6 @@ IST = pytz.timezone("Asia/Kolkata")
 # Streamlit Page Configuration
 st.set_page_config(page_title="Nifty Options IV Spike Dashboard", layout="wide")
 
-# ✅ Initialize Google Sheet (only once)
-if "gsheet" not in st.session_state:
-    try:
-        st.session_state.gsheet = setup_gsheet("NIFTY writing")
-        st.success(f"✅ Connected to Google Sheet: {st.session_state.gsheet.title}")
-    except Exception as e:
-        st.warning(f"⚠️ Google Sheets setup failed: {e}")
-        st.stop()
-
 
 
 
