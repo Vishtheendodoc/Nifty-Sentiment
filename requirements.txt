@@ -1,12 +1,11 @@
 streamlit
-plotly
 pandas
 numpy
+plotly
 requests
 flask
 flask-cors
 apscheduler
-datetime
-pytz
-tzlocal
 scipy
+scikit-learn
+joblib
