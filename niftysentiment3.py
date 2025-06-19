@@ -19,7 +19,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestClassifier
 import joblib
 import sys
-from requests.exceptions import 
+from requests.exceptions import RequestException
 
 
 
