@@ -21,6 +21,13 @@ import joblib
 import sys
 from requests.exceptions import RequestException
 
+# Check for URL query param ?run=true
+run = st.experimental_get_query_params().get("run", ["false"])[0]
+
+if run != "true":
+    st.warning("⏳ Scheduled task not triggered. Add `?run=true` to run.")
+    st.stop()
+
 
 
 
