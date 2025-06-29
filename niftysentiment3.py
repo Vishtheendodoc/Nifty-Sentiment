@@ -21,12 +21,26 @@ import joblib
 import sys
 from requests.exceptions import RequestException
 
-# Check for URL query param ?run=true
-run = st.experimental_get_query_params().get("run", ["false"])[0]
+
+# ✅ Use new query param API (after April 2024)
+params = st.query_params
+run = params.get("run", "false")
 
 if run != "true":
     st.warning("⏳ Scheduled task not triggered. Add `?run=true` to run.")
     st.stop()
+
+# ✅ Your main logic goes below this
+st.title("🔍 Nifty Sentiment Scheduled Analysis")
+
+# Simulated logic — replace this with your real analysis
+result = "Market Neutral"  # Example result
+
+# ✅ Optional: Log execution time
+now = datetime.datetime.now()
+st.write(f"✅ Task executed at: {now.strftime('%Y-%m-%d %H:%M:%S')}")
+st.success(f"Sentiment Analysis Result: {result}")
+
 
 
 
