@@ -20,7 +20,7 @@ from sklearn.ensemble import RandomForestClassifier
 import joblib
 import sys
 from requests.exceptions import RequestException
-import datetime
+
 
 
 def save_sentiment_log():
