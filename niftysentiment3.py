@@ -46,7 +46,7 @@ st.set_page_config(page_title="Nifty Options IV Spike Dashboard", layout="wide")
 # 🔹 Dhan API Credentials (Replace with your own)
 # ====== Dhan API Config ======
 CLIENT_ID = '1100244268'
-ACCESS_TOKEN= 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJkaGFuIiwicGFydG5lcklkIjoiIiwiZXhwIjoxNzUxMDA2OTE4LCJ0b2tlbkNvbnN1bWVyVHlwZSI6IlNFTEYiLCJ3ZWJob29rVXJsIjoiIiwiZGhhbkNsaWVudElkIjoiMTEwMDI0NDI2OCJ9.caSAnGLGTZ0PSNcj0ICBfIQ9FgIxR68h8JHela-P151EQO9QucJ4KOfNEyGBwFtyEGPCBkBuQN2JyiYD0QzuSQ'  # Replace with your Access Token
+ACCESS_TOKEN= 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJkaGFuIiwicGFydG5lcklkIjoiIiwiZXhwIjoxNzUzODUzOTQxLCJ0b2tlbkNvbnN1bWVyVHlwZSI6IlNFTEYiLCJ3ZWJob29rVXJsIjoiIiwiZGhhbkNsaWVudElkIjoiMTEwMDI0NDI2OCJ9.DsXutZuv9qIh4MNpMrfjIccyWg_-nwR9t5ldK0H14aGY23U7IaFW6cTmXp1MAr8zjk7eAIYNe-SVLv19Skw4MQ'  # Replace with your Access Token
 
 HEADERS = {
     'client-id': CLIENT_ID,
