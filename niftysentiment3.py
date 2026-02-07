@@ -20,7 +20,103 @@ from sklearn.ensemble import RandomForestClassifier
 import joblib
 import sys
 from requests.exceptions import RequestException
+import json
+import pickle
 
+
+# ====== PERSISTENCE FUNCTIONS ======
+# These functions save/load session state to files so data persists across app restarts
+
+def save_session_state():
+    """Save all session state data to files for persistence"""
+    try:
+        # Save previous_data (dictionary)
+        with open("previous_data.pkl", "wb") as f:
+            pickle.dump(st.session_state.get("previous_data", {}), f)
+        
+        # Save rolling_data (dictionary with deques - need special handling)
+        rolling_data_serializable = {}
+        for key, deque_obj in st.session_state.get("rolling_data", {}).items():
+            rolling_data_serializable[key] = list(deque_obj)
+        with open("rolling_data.json", "w") as f:
+            json.dump(rolling_data_serializable, f)
+        
+        # Save alerts (list)
+        with open("alerts.json", "w") as f:
+            json.dump(st.session_state.get("alerts", []), f)
+        
+        # Save sent_alerts (set - convert to list for JSON)
+        with open("sent_alerts.json", "w") as f:
+            json.dump(list(st.session_state.get("sent_alerts", set())), f)
+        
+        # Save sentiment_history (list)
+        with open("sentiment_history.json", "w") as f:
+            json.dump(st.session_state.get("sentiment_history", []), f)
+        
+        # Save previous_avg_iv (float)
+        if "previous_avg_iv" in st.session_state:
+            with open("previous_avg_iv.json", "w") as f:
+                json.dump(st.session_state.previous_avg_iv, f)
+        
+        # Save strike_sentiment_log (already saved via save_sentiment_log, but ensure it's saved)
+        if "strike_sentiment_log" in st.session_state:
+            save_sentiment_log()
+            
+    except Exception as e:
+        # Silently fail - don't break the app if saving fails
+        pass
+
+def load_session_state():
+    """Load all session state data from files on app startup"""
+    try:
+        # Load previous_data
+        if os.path.exists("previous_data.pkl"):
+            with open("previous_data.pkl", "rb") as f:
+                st.session_state.previous_data = pickle.load(f)
+        
+        # Load rolling_data
+        if os.path.exists("rolling_data.json"):
+            with open("rolling_data.json", "r") as f:
+                rolling_data_dict = json.load(f)
+                # Convert lists back to deques
+                st.session_state.rolling_data = {
+                    key: deque(data_list, maxlen=5) 
+                    for key, data_list in rolling_data_dict.items()
+                }
+        
+        # Load alerts
+        if os.path.exists("alerts.json"):
+            with open("alerts.json", "r") as f:
+                st.session_state.alerts = json.load(f)
+        
+        # Load sent_alerts (convert list back to set)
+        if os.path.exists("sent_alerts.json"):
+            with open("sent_alerts.json", "r") as f:
+                st.session_state.sent_alerts = set(json.load(f))
+        
+        # Load sentiment_history
+        if os.path.exists("sentiment_history.json"):
+            with open("sentiment_history.json", "r") as f:
+                st.session_state.sentiment_history = json.load(f)
+        
+        # Load previous_avg_iv
+        if os.path.exists("previous_avg_iv.json"):
+            with open("previous_avg_iv.json", "r") as f:
+                st.session_state.previous_avg_iv = json.load(f)
+        
+        # Load strike_sentiment_log (already handled in enhanced_analyze_data, but ensure it's loaded)
+        if "strike_sentiment_log" not in st.session_state:
+            try:
+                if os.path.exists("sentiment_log_backup.csv"):
+                    st.session_state.strike_sentiment_log = pd.read_csv("sentiment_log_backup.csv").to_dict("records")
+                else:
+                    st.session_state.strike_sentiment_log = []
+            except:
+                st.session_state.strike_sentiment_log = []
+                
+    except Exception as e:
+        # If loading fails, initialize with defaults
+        pass
 
 
 def save_sentiment_log():
@@ -40,8 +136,8 @@ IST = pytz.timezone("Asia/Kolkata")
 # Streamlit Page Configuration
 st.set_page_config(page_title="Nifty Options IV Spike Dashboard", layout="wide")
 
-
-
+# 🔹 Load persisted session state data on startup
+load_session_state()
 
 # 🔹 Dhan API Credentials (Replace with your own)
 # ====== Dhan API Config ======
@@ -413,6 +509,11 @@ def enhanced_analyze_data(option_chain):
         "CE_Avg_Sentiment": avg_sentiment_ce,
         "PE_Avg_Sentiment": avg_sentiment_pe
     })
+    
+    # Save sentiment history periodically (limit size to prevent file bloat)
+    if len(st.session_state.sentiment_history) > 1000:
+        st.session_state.sentiment_history = st.session_state.sentiment_history[-1000:]
+    save_session_state()
 
     
     # Show in UI
@@ -1043,6 +1144,9 @@ def enhanced_analyze_data(option_chain):
 
 
     previous_data["underlying_price"] = underlying_price  # Save underlying price for next cycle
+    
+    # Save session state after updating previous_data
+    save_session_state()
 
     # After your existing analysis, add these enhancements:
     
@@ -1099,6 +1203,7 @@ def enhanced_analyze_data(option_chain):
         MAX_ALERTS = 20
         combined_alerts = enhanced_alerts + st.session_state.alerts
         st.session_state.alerts = combined_alerts[:MAX_ALERTS]
+        save_session_state()  # Save after updating alerts
 
         send_unique_telegram_alerts(enhanced_alerts)
     
@@ -1131,6 +1236,10 @@ def enhanced_analyze_data(option_chain):
 
         
     save_to_csv(df)
+    
+    # Final save to ensure all data is persisted
+    save_session_state()
+    
     return df, net_oi_df, enhanced_signals
 
 
@@ -1186,6 +1295,7 @@ def expiry_day_analysis(df, underlying_price, expiry_date):
                          f"Long options severely impacted!")
     
     st.session_state.previous_avg_iv = avg_iv
+    save_session_state()  # Save after updating previous_avg_iv
     
     # 4. THETA BURN ACCELERATION
     avg_theta = df['Theta'].mean()
@@ -1846,6 +1956,7 @@ def send_unique_telegram_alerts(alerts):
         message = "\n".join(new_alerts)
         send_telegram_alert(message)  # Send only new alerts
         st.session_state.sent_alerts.update(new_alerts)  # Store sent alerts persistently
+        save_session_state()  # Save after updating sent_alerts
 
 # Function to save data to CSV
 def save_to_csv(df):
@@ -2200,6 +2311,7 @@ def ultimate_main_function():
                 
                 if expiry_alerts:
                     st.session_state.alerts = expiry_alerts + st.session_state.alerts[:5]
+                    save_session_state()  # Save after updating alerts
                     send_unique_telegram_alerts(expiry_alerts)
 
                 # 🔹 ENHANCED HEADER
@@ -2282,6 +2394,8 @@ def ultimate_main_function():
 
         # Auto refresh logic
         if auto_refresh and not manual_refresh:
+            # Periodic save before refresh
+            save_session_state()
             time.sleep(refresh_interval)
             st.rerun()
 
