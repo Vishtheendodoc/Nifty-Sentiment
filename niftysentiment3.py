@@ -142,7 +142,7 @@ load_session_state()
 # 🔹 Dhan API Credentials (Replace with your own)
 # ====== Dhan API Config ======
 CLIENT_ID = '1100244268'
-ACCESS_TOKEN= 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJkaGFuIiwicGFydG5lcklkIjoiIiwiZXhwIjoxNzcwNTI5OTMzLCJpYXQiOjE3NzA0NDM1MzMsInRva2VuQ29uc3VtZXJUeXBlIjoiU0VMRiIsIndlYmhvb2tVcmwiOiIiLCJkaGFuQ2xpZW50SWQiOiIxMTAwMjQ0MjY4In0.leZEXQjNx2wlZHbGHre0OKfuvA8qqS22oHUAA4HBhavFyjMbbesqX3CE6FC94LsQCcfaPMfIIBYqAlgagmFzKg'  # Replace with your Access Token
+ACCESS_TOKEN= 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJkaGFuIiwicGFydG5lcklkIjoiIiwiZXhwIjoxNzcwNDQxMzE2LCJpYXQiOjE3NzAzNTQ5MTYsInRva2VuQ29uc3VtZXJUeXBlIjoiU0VMRiIsIndlYmhvb2tVcmwiOiIiLCJkaGFuQ2xpZW50SWQiOiIxMTAwMjQ0MjY4In0.3JXHf68X73-lcxv9jKi3sqhq6XMH1Xb0aFwsJd-wcUNH8FPNua0psCxOmhx0CByjmLloFTAhnquekw_xbFLrnw'  # Replace with your Access Token
 
 HEADERS = {
     'client-id': CLIENT_ID,
@@ -778,23 +778,35 @@ def enhanced_analyze_data(option_chain):
         log_df[['Flow_Type', 'Color', 'Weighted_Activity']] = classification
 
         # Time-based aggregation with better granularity
-        log_df['TimeSlot'] = pd.to_datetime(log_df['Timestamp']).dt.floor('1min').dt.strftime('%H:%M')
+        # Keep datetime for proper sorting, then format for display
+        log_df['TimeSlot_dt'] = pd.to_datetime(log_df['Timestamp']).dt.floor('1min')
+        log_df['TimeSlot'] = log_df['TimeSlot_dt'].dt.strftime('%H:%M')
         
-        # Enhanced aggregation
-        flow_agg = log_df.groupby(['TimeSlot', 'Flow_Type', 'Color']).agg({
+        # Enhanced aggregation - use datetime for proper sorting
+        flow_agg = log_df.groupby(['TimeSlot_dt', 'Flow_Type', 'Color']).agg({
             'Weighted_Activity': 'sum',
             'UnderlyingValue': 'last',
             'Volume': 'sum',
             'MFI': 'mean'
         }).reset_index()
         
+        # Sort by datetime to ensure chronological order
+        flow_agg = flow_agg.sort_values('TimeSlot_dt')
+        # Create string version for display
+        flow_agg['TimeSlot'] = flow_agg['TimeSlot_dt'].dt.strftime('%H:%M')
+        
     
         
-        # Price data with MFI
-        price_data = log_df.groupby('TimeSlot').agg({
+        # Price data with MFI - use datetime for proper sorting
+        price_data = log_df.groupby('TimeSlot_dt').agg({
             'UnderlyingValue': 'last',
             'MFI': 'mean'
         }).reset_index()
+        
+        # Sort by datetime to ensure chronological order
+        price_data = price_data.sort_values('TimeSlot_dt')
+        # Create string version for display
+        price_data['TimeSlot'] = price_data['TimeSlot_dt'].dt.strftime('%H:%M')
 
         # Create enhanced TradingView-style triple pane chart
         fig = make_subplots(
@@ -809,30 +821,30 @@ def enhanced_analyze_data(option_chain):
             )
         )
 
-        # Upper pane: Price chart
+        # Upper pane: Price chart - use datetime for proper x-axis
         fig.add_trace(
             go.Scatter(
-                x=price_data['TimeSlot'],
+                x=price_data['TimeSlot_dt'],
                 y=price_data['UnderlyingValue'],
                 mode='lines',
                 name='Spot Price',
                 line=dict(color='#00BFFF', width=2),
-                hovertemplate="<b>%{x}</b><br>Price: ₹%{y:,.2f}<extra></extra>"
+                hovertemplate="<b>%{x|%H:%M}</b><br>Price: ₹%{y:,.2f}<extra></extra>"
             ),
             row=1, col=1
         )
 
-        # Middle pane: MFI
+        # Middle pane: MFI - use datetime for proper x-axis
         fig.add_trace(
             go.Scatter(
-                x=price_data['TimeSlot'],
+                x=price_data['TimeSlot_dt'],
                 y=price_data['MFI'],
                 mode='lines',
                 name='MFI',
                 line=dict(color='#FFD700', width=2),
                 fill='tonexty',
                 fillcolor='rgba(255, 215, 0, 0.1)',
-                hovertemplate="<b>%{x}</b><br>MFI: %{y:.1f}<extra></extra>"
+                hovertemplate="<b>%{x|%H:%M}</b><br>MFI: %{y:.1f}<extra></extra>"
             ),
             row=2, col=1
         )
@@ -855,12 +867,12 @@ def enhanced_analyze_data(option_chain):
                 color = flow_data['Color'].iloc[0]
                 fig.add_trace(
                     go.Bar(
-                        x=flow_data['TimeSlot'],
+                        x=flow_data['TimeSlot_dt'],
                         y=flow_data['Weighted_Activity'],
                         name=flow_type,
                         marker_color=color,
                         opacity=0.8,
-                        hovertemplate=f"<b>{flow_type}</b><br>Time: %{{x}}<br>Flow: %{{y:,.0f}}<br>Avg MFI: %{{customdata:.1f}}<extra></extra>",
+                        hovertemplate=f"<b>{flow_type}</b><br>Time: %{{x|%H:%M}}<br>Flow: %{{y:,.0f}}<br>Avg MFI: %{{customdata:.1f}}<extra></extra>",
                         customdata=flow_data['MFI']
                     ),
                     row=3, col=1
@@ -875,6 +887,8 @@ def enhanced_analyze_data(option_chain):
                 showgrid=False,
                 zeroline=False,
                 color='black',
+                type='date',                # Use date type for proper datetime handling
+                tickformat='%H:%M',         # Format as HH:MM
                 row=row, col=1
             )
             fig.update_yaxes(
@@ -2402,7 +2416,6 @@ def ultimate_main_function():
 # 🔹 REPLACE YOUR MAIN EXECUTION
 if __name__ == "__main__":
     ultimate_main_function()
-
 
 
 
