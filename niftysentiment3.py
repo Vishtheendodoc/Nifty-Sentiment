@@ -142,7 +142,7 @@ load_session_state()
 # 🔹 Dhan API Credentials (Replace with your own)
 # ====== Dhan API Config ======
 CLIENT_ID = '1100244268'
-ACCESS_TOKEN= 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJkaGFuIiwicGFydG5lcklkIjoiIiwiZXhwIjoxNzcwNjkxODg5LCJpYXQiOjE3NzA2MDU0ODksInRva2VuQ29uc3VtZXJUeXBlIjoiU0VMRiIsIndlYmhvb2tVcmwiOiIiLCJkaGFuQ2xpZW50SWQiOiIxMTAwMjQ0MjY4In0.iVqf7ACiz3FJ8WDkwS6PqqbdxbVQIupvsJMsDTCUCEP4EPrvKRCL6wW_tNAXvGPoqXlgpY-xkotYMfkX7nDgrw'  # Replace with your Access Token
+ACCESS_TOKEN= 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJkaGFuIiwicGFydG5lcklkIjoiIiwiZXhwIjoxNzcwNzc3MzY4LCJpYXQiOjE3NzA2OTA5NjgsInRva2VuQ29uc3VtZXJUeXBlIjoiU0VMRiIsIndlYmhvb2tVcmwiOiIiLCJkaGFuQ2xpZW50SWQiOiIxMTAwMjQ0MjY4In0.6mVee86hy0pH5SrE0ENCKQngslaEYPUaMGG_ByBwpNpHaCW9eNl5KqYXmGz4YEXh56AOiSHV8qkM6coAAG-ngg'  # Replace with your Access Token
 
 HEADERS = {
     'client-id': CLIENT_ID,
@@ -2402,6 +2402,7 @@ def ultimate_main_function():
 # 🔹 REPLACE YOUR MAIN EXECUTION
 if __name__ == "__main__":
     ultimate_main_function()
+
 
 
 
