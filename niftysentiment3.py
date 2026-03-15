@@ -142,7 +142,7 @@ load_session_state()
 # 🔹 Dhan API Credentials (Replace with your own)
 # ====== Dhan API Config ======
 CLIENT_ID = '1100244268'
-ACCESS_TOKEN= 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJkaGFuIiwicGFydG5lcklkIjoiIiwiZXhwIjoxNzczNDU4MzA2LCJpYXQiOjE3NzMzNzE5MDYsInRva2VuQ29uc3VtZXJUeXBlIjoiU0VMRiIsIndlYmhvb2tVcmwiOiIiLCJkaGFuQ2xpZW50SWQiOiIxMTAwMjQ0MjY4In0.GyL-Z79QQ_R8YkNPbjLg6OPOCKP4aEbHehCiBO4qJdGfBJBBubJ5uk4OzpQv7UoVXbsmbTgvY4C7jpyC6ayJ8A'  # Replace with your Access Token
+ACCESS_TOKEN= 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJkaGFuIiwicGFydG5lcklkIjoiIiwiZXhwIjoxNzczNjcwOTM1LCJpYXQiOjE3NzM1ODQ1MzUsInRva2VuQ29uc3VtZXJUeXBlIjoiU0VMRiIsIndlYmhvb2tVcmwiOiIiLCJkaGFuQ2xpZW50SWQiOiIxMTAwMjQ0MjY4In0.V72ERE4d6qc6w0xDIyZkNuBEjkJxXprCpZmyUaBRBDqj2E-rC9V4EiutfF_-eCID0TdoS9bWATvNDcgpkZ4zYg'  # Replace with your Access Token
 
 HEADERS = {
     'client-id': CLIENT_ID,
